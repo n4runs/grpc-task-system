@@ -1,0 +1,14 @@
+syntax = "proto3";
+
+package notification;
+
+service NotificationService {
+  rpc Subscribe (Empty) returns (stream Notification);
+  rpc SendNotification (Notification) returns (Empty);
+}
+
+message Empty {}
+
+message Notification {
+  string message = 1;
+}
