@@ -1,5 +1,10 @@
 #  Smart Task Management System (gRPC)
 
+| NRP              | Nama                        |
+| ---------------- | --------------------------- |
+| 5027241101       | Binar Najmuddin Mahya       |
+| 5027241105       | Naruna Vicranthyo P G       |
+
 ##  Deskripsi
 
 Smart Task Management System adalah aplikasi berbasis **microservices** yang menggunakan **gRPC** untuk komunikasi antar layanan.
