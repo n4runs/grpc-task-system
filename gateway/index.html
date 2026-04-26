@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>gRPC Dashboard</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    body {
+      font-family: Arial;
+      background: #0f172a;
+      color: white;
+      margin: 0;
+      padding: 20px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: #1e293b;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    }
+
+    input {
+      padding: 10px;
+      margin: 5px 0;
+      width: 100%;
+      border-radius: 5px;
+      border: none;
+    }
+
+    button {
+      padding: 10px;
+      background: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #2563eb;
+    }
+
+    #notif {
+      max-height: 200px;
+      overflow-y: auto;
+      padding-left: 15px;
+    }
+
+    .status {
+      font-weight: bold;
+    }
+
+    .connected {
+      color: #22c55e;
+    }
+
+    .disconnected {
+      color: #ef4444;
+    }
+
+    .counter {
+      font-size: 40px;
+      font-weight: bold;
+      text-align: center;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>📡 gRPC Real-Time Dashboard</h1>
+
+<p>Status:
+  <span id="status" class="status disconnected">Disconnected</span>
+</p>
+
+<div class="grid">
+
+  <!-- CREATE TASK -->
+  <div class="card">
+    <h2>Create Task</h2>
+    <input id="title" placeholder="Judul Task">
+    <input id="desc" placeholder="Deskripsi">
+    <button onclick="createTask()">Kirim Task</button>
+  </div>
+
+  <!-- COUNTER -->
+  <div class="card">
+    <h2>Total Task</h2>
+    <div id="counter" class="counter">0</div>
+  </div>
+
+  <!-- NOTIFICATION -->
+  <div class="card">
+    <h2>🔔 Notification Log</h2>
+    <ul id="notif"></ul>
+  </div>
+
+  <!-- CHART -->
+  <div class="card">
+    <h2>📊 Task Activity</h2>
+    <canvas id="chart"></canvas>
+  </div>
+
+</div>
+
+<script>
+const ws = new WebSocket("ws://localhost:8080");
+
+let counter = 0;
+
+// CHART
+const ctx = document.getElementById('chart');
+const chart = new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels: [],
+    datasets: [{
+      label: 'Tasks',
+      data: [],
+      borderWidth: 2
+    }]
+  }
+});
+
+// CONNECTION
+ws.onopen = () => {
+  const status = document.getElementById("status");
+  status.innerText = "Connected";
+  status.classList.remove("disconnected");
+  status.classList.add("connected");
+};
+
+// MESSAGE HANDLER
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  // NOTIFICATION
+  if (msg.type === 'notification') {
+    const li = document.createElement("li");
+    li.innerText = msg.data;
+    document.getElementById("notif").appendChild(li);
+  }
+
+  // COUNTER
+  if (msg.type === 'counter') {
+    counter = msg.data;
+    document.getElementById("counter").innerText = counter;
+
+    // UPDATE CHART
+    chart.data.labels.push(counter);
+    chart.data.datasets[0].data.push(counter);
+    chart.update();
+  }
+};
+
+// CREATE TASK
+function createTask() {
+  const title = document.getElementById("title").value;
+  const desc = document.getElementById("desc").value;
+
+  ws.send(JSON.stringify({
+    type: 'createTask',
+    title,
+    description: desc
+  }));
+}
+</script>
+
+</body>
+</html>

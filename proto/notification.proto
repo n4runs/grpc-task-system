@@ -7,8 +7,8 @@ service NotificationService {
   rpc SendNotification (Notification) returns (Empty);
 }
 
-message Empty {}
-
 message Notification {
   string message = 1;
 }
+
+message Empty {}
